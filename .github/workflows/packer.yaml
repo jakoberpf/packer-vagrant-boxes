@@ -1,0 +1,41 @@
+name: Build boxes
+
+on:
+  push:
+    tags: ["v[0-9].[0-9]+.[0-9]+"]
+    branches:
+      - main
+
+jobs:
+  packer:
+    runs-on: ubuntu-latest
+    environment: pineapple
+    name: Run packer init, validate and build
+    strategy:
+      matrix:
+        version: [ubuntu-2004]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "latest"
+
+      - name: Run `packer init`
+        id: init
+        working-directory: ./${{ matrix.version }}
+        run: "packer init ."
+
+      - name: Run `packer validate`
+        id: validate
+        working-directory: ./${{ matrix.version }}
+        run: "packer validate ."
+
+      - name: Run `packer build`
+        id: build
+        working-directory: ./${{ matrix.version }}
+        run: "packer build ."
+    
